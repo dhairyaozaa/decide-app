@@ -5,7 +5,7 @@
 //   git commit -m "update api url"
 //   git push
 
-window.DECIDE_API = 'PASTE_YOUR_NGROK_URL_HERE';
+window.DECIDE_API = 'https://quench-preteen-catalyze.ngrok-free.dev';
 
 // Get your URL by running ngrok:
 //   ngrok http 8000
