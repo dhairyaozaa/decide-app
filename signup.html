@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decide — Create Account</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0b0a;--card:#161412;--raised:#1c1a17;--input:#131210;
+  --b0:rgba(255,255,255,.06);--b1:rgba(255,255,255,.11);
+  --amber:#e8a838;--adim:#6b4510;
+  --green:#5aad7e;--gdim:#183d2a;--gtext:#7fcb9c;
+  --red:#d96060;--rdim:#3d1818;--rtext:#f08080;
+  --t0:#e4dfd5;--t1:#8f897e;--t2:#4e4a44;
+  --serif:'DM Serif Display',Georgia,serif;
+  --sans:'DM Sans',system-ui,sans-serif;
+  --r:12px;--rs:8px;
+}
+html,body{min-height:100%;font-family:var(--sans);background:var(--bg);color:var(--t0);
+          display:flex;align-items:center;justify-content:center;padding:20px}
+@keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.page{width:100%;max-width:460px;animation:up .3s ease}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--serif);
+      font-size:1.3rem;color:var(--amber);margin-bottom:32px}
+h1{font-family:var(--serif);font-size:2rem;font-weight:400;margin-bottom:6px}
+.sub{font-size:.83rem;color:var(--t1);margin-bottom:28px;line-height:1.6}
+
+.card{background:var(--card);border:1px solid var(--b1);border-radius:var(--r);
+      padding:32px;box-shadow:0 24px 64px rgba(0,0,0,.5)}
+.card.shake{animation:shake .4s ease}
+
+.field{margin-bottom:16px;position:relative}
+.field label{display:block;font-size:.68rem;text-transform:uppercase;
+             letter-spacing:.08em;color:var(--t2);margin-bottom:5px}
+.field input{width:100%;background:var(--input);border:1px solid var(--b1);
+             border-radius:var(--rs);color:var(--t0);font-family:var(--sans);
+             font-size:.95rem;padding:12px 40px 12px 14px;outline:none;
+             transition:border-color .2s,box-shadow .2s;-webkit-appearance:none}
+.field input:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(232,168,56,.08)}
+.field input.ok {border-color:var(--green)}
+.field input.bad{border-color:var(--red)}
+.field input::placeholder{color:var(--t2)}
+
+/* icons inside input */
+.fi{position:absolute;right:12px;bottom:13px;font-size:15px;
+    cursor:default;user-select:none;line-height:1}
+.fi.eye{cursor:pointer}
+.fi.eye:hover{opacity:.7}
+
+/* inline message below field */
+.fm{font-size:.74rem;margin-top:5px;min-height:17px;
+    display:flex;align-items:center;gap:5px;transition:color .2s}
+.fm.ok {color:var(--gtext)}
+.fm.bad{color:var(--rtext)}
+.fm.checking{color:var(--t1)}
+
+/* password strength */
+.bars{display:flex;gap:4px;margin-top:8px}
+.bar{flex:1;height:3px;background:var(--raised);border-radius:99px;transition:background .3s}
+.bar.w{background:var(--red)}
+.bar.m{background:var(--amber)}
+.bar.s{background:var(--green)}
+
+/* requirements */
+.reqs{margin-top:10px;padding:10px 12px;background:var(--raised);
+      border-radius:var(--rs);display:none}
+.reqs.show{display:block}
+.req{font-size:.74rem;color:var(--t2);padding:2px 0;
+     display:flex;align-items:center;gap:7px;transition:color .2s}
+.req.met{color:var(--gtext)}
+.req::before{content:'○';font-size:.6rem;flex-shrink:0}
+.req.met::before{content:'●';color:var(--green)}
+
+.btn{width:100%;background:var(--amber);color:#1a0e00;font-family:var(--sans);
+     font-size:.92rem;font-weight:500;padding:13px 20px;border:none;
+     border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;
+     justify-content:center;gap:8px;transition:background .15s,transform .1s;margin-top:20px}
+.btn:hover:not(:disabled){background:#f0b84a}
+.btn:active:not(:disabled){transform:scale(.99)}
+.btn:disabled{background:var(--adim);color:rgba(255,255,255,.2);cursor:not-allowed}
+.ld{width:16px;height:16px;border:2px solid rgba(255,255,255,.2);
+    border-top-color:#1a0e00;border-radius:50%;animation:spin .7s linear infinite}
+
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--b0)}
+.divider span{font-size:.7rem;color:var(--t2)}
+.link-row{text-align:center;font-size:.83rem;color:var(--t1)}
+.link-row a{color:var(--amber);text-decoration:none;font-weight:500}
+.link-row a:hover{text-decoration:underline}
+
+.gerr{background:var(--rdim);border:1px solid rgba(209,96,96,.3);
+      border-radius:var(--rs);padding:12px 14px;font-size:.83rem;
+      color:var(--rtext);margin-bottom:16px;display:none;align-items:center;gap:8px}
+.gerr.show{display:flex}
+</style>
+<script src="config.js"></script>
+</head>
+<body>
+
+<div class="page">
+  <div class="logo">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <circle cx="11" cy="11" r="10" stroke="#e8a838" stroke-width="1.5"/>
+      <path d="M11 5v6l3.5 3.5" stroke="#e8a838" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    Decide
+  </div>
+  <h1>Create account</h1>
+  <p class="sub">Set up your personal decision assistant.</p>
+
+  <div class="card" id="card">
+    <div class="gerr" id="gerr">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M7 4v3M7 9.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      <span id="gerr-msg"></span>
+    </div>
+
+    <div class="field">
+      <label>Username</label>
+      <input id="u" type="text" placeholder="choose a username"
+             autocomplete="username" spellcheck="false">
+      <span class="fi" id="u-fi"></span>
+      <div class="fm" id="u-fm"></div>
+    </div>
+
+    <div class="field">
+      <label>Email address</label>
+      <input id="e" type="email" placeholder="you@example.com" autocomplete="email">
+      <span class="fi" id="e-fi"></span>
+      <div class="fm" id="e-fm"></div>
+    </div>
+
+    <div class="field">
+      <label>Password</label>
+      <input id="p" type="password" placeholder="create a strong password"
+             autocomplete="new-password">
+      <span class="fi eye" id="p-eye" onclick="toggleEye('p','p-eye')">👁</span>
+      <div class="bars" id="p-bars" style="display:none">
+        <div class="bar" id="b1"></div><div class="bar" id="b2"></div>
+        <div class="bar" id="b3"></div><div class="bar" id="b4"></div>
+      </div>
+      <div class="fm" id="p-fm"></div>
+      <div class="reqs" id="p-reqs">
+        <div class="req" id="r-len">At least 8 characters</div>
+        <div class="req" id="r-up">One uppercase letter (A–Z)</div>
+        <div class="req" id="r-lo">One lowercase letter (a–z)</div>
+        <div class="req" id="r-num">One number (0–9)</div>
+        <div class="req" id="r-sym">One special character (!@#$%^&amp;*)</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Confirm password</label>
+      <input id="c" type="password" placeholder="repeat your password"
+             autocomplete="new-password">
+      <span class="fi eye" id="c-eye" onclick="toggleEye('c','c-eye')">👁</span>
+      <div class="fm" id="c-fm"></div>
+    </div>
+
+    <button class="btn" id="sub" onclick="doSignup()" disabled>
+      <span id="sub-t">Create account</span>
+      <div class="ld" id="sub-s" style="display:none"></div>
+    </button>
+
+    <div class="divider"><span>or</span></div>
+    <div class="link-row">Already have an account? <a href="login.html">Sign in →</a></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const API = (() => {
+  // If running on localhost, always use localhost
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return 'http://localhost:8000';
+  }
+  // On GitHub Pages: use configured tunnel URL if it looks valid
+  const configured = (typeof window.DECIDE_API !== 'undefined') ? window.DECIDE_API : '';
+  const isPlaceholder = !configured
+    || configured.includes('YOUR_TUNNEL')
+    || configured.includes('test123')
+    || configured === 'http://localhost:8000';
+  if (!isPlaceholder) return configured;
+  // Fallback — show a helpful error
+  console.error('DECIDE: config.js has no valid API URL. Edit github-pages/config.js with your tunnel URL.');
+  return 'http://localhost:8000';
+})();
+
+/* Clear any stale session */
+localStorage.removeItem('dt');
+localStorage.removeItem('dm');
+
+/* Validation state — all must be true before submit enables */
+const V = { u: false, e: false, p: false, c: false };
+
+/* ── DOM helpers ──────────────────────────────────────────────────────── */
+function inp(id)  { return document.getElementById(id); }
+function fm(id)   { return document.getElementById(id + '-fm'); }
+function fi(id)   { return document.getElementById(id + '-fi'); }
+
+function setField(id, state, msg) {
+  /* state: 'ok' | 'bad' | 'checking' | '' */
+  const el = inp(id);
+  el.classList.remove('ok','bad');
+  if (state === 'ok')  el.classList.add('ok');
+  if (state === 'bad') el.classList.add('bad');
+  const m = fm(id);
+  if (m) { m.textContent = msg; m.className = 'fm ' + state; }
+  const f = fi(id);
+  if (f && f.id !== id+'-eye') {
+    f.textContent = state === 'ok' ? '✅' : state === 'bad' ? '❌' : state === 'checking' ? '⏳' : '';
+  }
+}
+
+function showGerr(msg) {
+  document.getElementById('gerr-msg').textContent = msg;
+  document.getElementById('gerr').classList.add('show');
+  const c = document.getElementById('card');
+  c.style.animation = 'none';
+  requestAnimationFrame(() => { c.style.animation = ''; c.classList.add('shake'); });
+  setTimeout(() => c.classList.remove('shake'), 450);
+}
+function hideGerr() { document.getElementById('gerr').classList.remove('show'); }
+
+function recheck() {
+  document.getElementById('sub').disabled = !(V.u && V.e && V.p && V.c);
+}
+
+/* ── Eye toggle ───────────────────────────────────────────────────────── */
+function toggleEye(inputId, eyeId) {
+  const el = inp(inputId);
+  el.type = el.type === 'password' ? 'text' : 'password';
+  inp(eyeId).textContent = el.type === 'password' ? '👁' : '🙈';
+}
+
+/* ── Username — debounced server check ───────────────────────────────── */
+let _uT;
+inp('u').addEventListener('input', () => {
+  clearTimeout(_uT);
+  V.u = false; recheck();
+  const v = inp('u').value.trim();
+  if (!v) { setField('u','',''); return; }
+  if (v.length < 3)  { setField('u','bad','Min 3 characters'); return; }
+  if (v.length > 32) { setField('u','bad','Max 32 characters'); return; }
+  if (!/^[a-zA-Z0-9_]+$/.test(v)) { setField('u','bad','Only letters, numbers, underscores'); return; }
+  setField('u','checking','Checking availability…');
+  _uT = setTimeout(async () => {
+    try {
+      const r = await fetch(`${API}/auth/check-username?username=${encodeURIComponent(v)}`);
+      const d = await r.json();
+      if (d.available) { setField('u','ok','Username available ✓'); V.u = true; }
+      else             { setField('u','bad', d.reason || 'Not available'); V.u = false; }
+    } catch {
+      setField('u','bad','Server offline?'); V.u = false;
+    }
+    recheck();
+  }, 600);
+});
+
+/* ── Email — format + server availability check ──────────────────────── */
+let _eT;
+inp('e').addEventListener('input', () => {
+  clearTimeout(_eT);
+  V.e = false; recheck();
+  const v = inp('e').value.trim();
+  if (!v) { setField('e','',''); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) {
+    setField('e','bad','Enter a valid email address'); return;
+  }
+  setField('e','checking','Checking…');
+  _eT = setTimeout(async () => {
+    try {
+      const r = await fetch(`${API}/auth/check-email?email=${encodeURIComponent(v)}`);
+      const d = await r.json();
+      if (d.available) { setField('e','ok','Email looks good ✓'); V.e = true; }
+      else             { setField('e','bad', d.reason || 'Already registered'); V.e = false; }
+    } catch {
+      setField('e','bad','Server offline?'); V.e = false;
+    }
+    recheck();
+  }, 500);
+});
+
+/* ── Password strength ───────────────────────────────────────────────── */
+const RULES = [
+  ['r-len',  p => p.length >= 8],
+  ['r-up',   p => /[A-Z]/.test(p)],
+  ['r-lo',   p => /[a-z]/.test(p)],
+  ['r-num',  p => /[0-9]/.test(p)],
+  ['r-sym',  p => /[!@#$%^&*()\-_=+\[\]{};:'",.<>?\/\\|`~]/.test(p)],
+];
+
+inp('p').addEventListener('input', () => {
+  V.p = false; recheck();
+  const p = inp('p').value;
+  const bars = document.getElementById('p-bars');
+  const reqs = document.getElementById('p-reqs');
+
+  if (!p) {
+    bars.style.display = 'none'; reqs.classList.remove('show');
+    setField('p','',''); checkConfirm(); return;
+  }
+
+  bars.style.display = 'flex'; reqs.classList.add('show');
+
+  let met = 0;
+  RULES.forEach(([id, fn]) => {
+    const ok = fn(p);
+    document.getElementById(id).classList.toggle('met', ok);
+    if (ok) met++;
+  });
+
+  /* Strength bars */
+  const bids = ['b1','b2','b3','b4'];
+  const fill = met <= 1 ? 1 : met === 2 ? 2 : met === 3 ? 3 : met === 4 ? 3 : 4;
+  const cls  = fill <= 2 ? 'w' : fill === 3 ? 'm' : 's';
+  const lbl  = ['','Weak','Weak','Fair','Strong','Very strong'][fill];
+  bids.forEach((id,i) => {
+    document.getElementById(id).className = 'bar' + (i < fill ? ' ' + cls : '');
+  });
+
+  if (met < 5) {
+    setField('p','bad', `${lbl} — meet all requirements`);
+  } else {
+    setField('p','ok','Strong password ✓');
+    V.p = true;
+  }
+  checkConfirm();
+  recheck();
+});
+
+/* ── Confirm password ────────────────────────────────────────────────── */
+function checkConfirm() {
+  V.c = false; recheck();
+  const c = inp('c').value;
+  if (!c) { setField('c','',''); return; }
+  if (inp('p').value !== c) { setField('c','bad','Passwords do not match'); }
+  else { setField('c','ok','Passwords match ✓'); V.c = true; }
+  recheck();
+}
+inp('c').addEventListener('input', checkConfirm);
+
+/* ── Submit ──────────────────────────────────────────────────────────── */
+async function doSignup() {
+  if (!(V.u && V.e && V.p && V.c)) return;
+  hideGerr();
+
+  const btn = document.getElementById('sub');
+  btn.disabled = true;
+  document.getElementById('sub-t').style.opacity = '.35';
+  document.getElementById('sub-s').style.display = 'inline-block';
+
+  const username = inp('u').value.trim();
+  const email    = inp('e').value.trim();
+  const password = inp('p').value;
+
+  try {
+    const r = await fetch(API + '/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password }),
+    });
+    const data = await r.json();
+
+    if (!r.ok) {
+      showGerr(data.detail || `Signup failed (${r.status})`);
+      btn.disabled = false;
+      document.getElementById('sub-t').style.opacity = '1';
+      document.getElementById('sub-s').style.display = 'none';
+      return;
+    }
+
+    localStorage.setItem('dt', data.access_token);
+    localStorage.setItem('dm', JSON.stringify({
+      id: data.user_id, username: data.username, currency: '₹',
+    }));
+    window.location.href = 'app.html#onboarding';
+
+  } catch {
+    showGerr('Cannot reach the server. Make sure it is running: python run.py');
+    btn.disabled = false;
+    document.getElementById('sub-t').style.opacity = '1';
+    document.getElementById('sub-s').style.display = 'none';
+  }
+}
+
+/* ── Keyboard ────────────────────────────────────────────────────────── */
+inp('u').addEventListener('keydown', e => { if(e.key==='Enter') inp('e').focus(); });
+inp('e').addEventListener('keydown', e => { if(e.key==='Enter') inp('p').focus(); });
+inp('p').addEventListener('keydown', e => { if(e.key==='Enter') inp('c').focus(); });
+inp('c').addEventListener('keydown', e => { if(e.key==='Enter' && V.u&&V.e&&V.p&&V.c) doSignup(); });
+</script>
+</body>
+</html>

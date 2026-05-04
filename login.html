@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decide — Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0b0a;--card:#161412;--raised:#1c1a17;--input:#131210;
+  --b0:rgba(255,255,255,.06);--b1:rgba(255,255,255,.11);
+  --amber:#e8a838;--adim:#6b4510;--aglow:rgba(232,168,56,.10);
+  --green:#5aad7e;--gdim:#183d2a;--gtext:#7fcb9c;
+  --red:#d96060;--rdim:#3d1818;--rtext:#f08080;
+  --t0:#e4dfd5;--t1:#8f897e;--t2:#4e4a44;
+  --serif:'DM Serif Display',Georgia,serif;
+  --sans:'DM Sans',system-ui,sans-serif;
+  --r:12px;--rs:8px;
+}
+html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--t0);
+          display:flex;align-items:center;justify-content:center;padding:20px}
+@keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+
+.page{width:100%;max-width:440px;animation:up .3s ease}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--serif);
+      font-size:1.3rem;color:var(--amber);margin-bottom:32px}
+h1{font-family:var(--serif);font-size:2rem;font-weight:400;margin-bottom:6px}
+.sub{font-size:.83rem;color:var(--t1);margin-bottom:28px;line-height:1.6}
+
+.card{background:var(--card);border:1px solid var(--b1);border-radius:var(--r);
+      padding:32px;box-shadow:0 24px 64px rgba(0,0,0,.5)}
+.card.shake{animation:shake .4s ease}
+
+.field{margin-bottom:16px;position:relative}
+.field label{display:flex;align-items:center;justify-content:space-between;
+             font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;
+             color:var(--t2);margin-bottom:5px}
+.field input{width:100%;background:var(--input);border:1px solid var(--b1);
+             border-radius:var(--rs);color:var(--t0);font-family:var(--sans);
+             font-size:.95rem;padding:12px 14px;outline:none;
+             transition:border-color .2s,box-shadow .2s;-webkit-appearance:none}
+.field input:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(232,168,56,.08)}
+.field input.err{border-color:var(--red)}
+.field input::placeholder{color:var(--t2)}
+.field .eye{position:absolute;right:12px;bottom:12px;cursor:pointer;
+            color:var(--t2);font-size:16px;line-height:1;user-select:none}
+.field .eye:hover{color:var(--t0)}
+
+.field-err{font-size:.74rem;color:var(--rtext);margin-top:4px;min-height:16px;
+           display:flex;align-items:center;gap:4px}
+.field-err::before{content:'⚠';font-size:.7rem}
+.field-err:empty{visibility:hidden}
+.field-err:empty::before{display:none}
+
+.strength{height:3px;background:var(--raised);border-radius:99px;margin-top:6px;overflow:hidden;display:none}
+.strength-fill{height:100%;border-radius:99px;transition:width .3s,background .3s}
+
+.btn{width:100%;background:var(--amber);color:#1a0e00;font-family:var(--sans);
+     font-size:.92rem;font-weight:500;padding:13px 20px;border:none;
+     border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;
+     justify-content:center;gap:8px;transition:background .15s,transform .1s;margin-top:20px}
+.btn:hover{background:#f0b84a}
+.btn:active{transform:scale(.99)}
+.btn:disabled{background:var(--adim);color:rgba(255,255,255,.2);cursor:not-allowed}
+.ld{width:16px;height:16px;border:2px solid rgba(255,255,255,.2);
+    border-top-color:#1a0e00;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--b0)}
+.divider span{font-size:.7rem;color:var(--t2)}
+.link-row{text-align:center;font-size:.83rem;color:var(--t1)}
+.link-row a{color:var(--amber);text-decoration:none;font-weight:500}
+.link-row a:hover{text-decoration:underline}
+
+.global-err{background:var(--rdim);border:1px solid rgba(209,96,96,.3);
+            border-radius:var(--rs);padding:12px 14px;font-size:.83rem;
+            color:var(--rtext);margin-bottom:16px;display:none;
+            align-items:center;gap:8px}
+.global-err.show{display:flex}
+
+.success-bar{background:var(--gdim);border:1px solid rgba(90,173,126,.3);
+             border-radius:var(--rs);padding:12px 14px;font-size:.83rem;
+             color:var(--gtext);margin-bottom:16px;display:none;
+             align-items:center;gap:8px}
+.success-bar.show{display:flex}
+
+.req-list{margin-top:6px;padding:10px 12px;background:var(--raised);
+          border-radius:var(--rs);font-size:.74rem}
+.req-list li{list-style:none;color:var(--t2);padding:2px 0;
+             display:flex;align-items:center;gap:6px;transition:color .2s}
+.req-list li.met{color:var(--gtext)}
+.req-list li::before{content:'○';font-size:.6rem;flex-shrink:0}
+.req-list li.met::before{content:'●';color:var(--green)}
+</style>
+<script src="config.js"></script>
+</head>
+<body>
+
+<div class="page">
+  <div class="logo">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <circle cx="11" cy="11" r="10" stroke="#e8a838" stroke-width="1.5"/>
+      <path d="M11 5v6l3.5 3.5" stroke="#e8a838" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    Decide
+  </div>
+
+  <h1>Welcome back</h1>
+  <p class="sub">Sign in to your personal decision assistant.</p>
+
+  <div class="card" id="card">
+    <div class="global-err" id="global-err">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M7 4v3M7 9.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      <span id="global-err-msg"></span>
+    </div>
+
+    <div class="field">
+      <label>Username</label>
+      <input id="username" type="text" placeholder="your username"
+             autocomplete="username" spellcheck="false">
+      <div class="field-err" id="username-err"></div>
+    </div>
+
+    <div class="field">
+      <label>
+        Password
+        <a href="#" onclick="forgotPass(event)" style="font-size:.7rem;color:var(--t2);text-decoration:none;text-transform:none;letter-spacing:0">Forgot password?</a>
+      </label>
+      <input id="password" type="password" placeholder="••••••••"
+             autocomplete="current-password">
+      <span class="eye" id="eye" onclick="togglePw()">👁</span>
+      <div class="field-err" id="password-err"></div>
+    </div>
+
+    <button class="btn" id="submit-btn" onclick="doLogin()">
+      <span id="btn-txt">Sign in</span>
+      <div class="ld" id="btn-sp" style="display:none"></div>
+    </button>
+
+    <div class="divider"><span>or</span></div>
+    <div class="link-row">Don't have an account? <a href="signup.html">Create one →</a></div>
+  </div>
+</div>
+
+<script>
+const API = (() => {
+  // If running on localhost, always use localhost
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return 'http://localhost:8000';
+  }
+  // On GitHub Pages: use configured tunnel URL if it looks valid
+  const configured = (typeof window.DECIDE_API !== 'undefined') ? window.DECIDE_API : '';
+  const isPlaceholder = !configured
+    || configured.includes('YOUR_TUNNEL')
+    || configured.includes('test123')
+    || configured === 'http://localhost:8000';
+  if (!isPlaceholder) return configured;
+  // Fallback — show a helpful error
+  console.error('DECIDE: config.js has no valid API URL. Edit github-pages/config.js with your tunnel URL.');
+  return 'http://localhost:8000';
+})();
+
+/* ── Always clear stale tokens on login page load ─────────────────────── */
+/* If the user navigated here manually, wipe local state */
+(function() {
+  /* Only clear if we're explicitly on the login page (not redirected here
+     after a fresh token verification) */
+  const redirected = sessionStorage.getItem('login_redirect');
+  if (!redirected) {
+    localStorage.removeItem('dt');
+    localStorage.removeItem('dm');
+  }
+  sessionStorage.removeItem('login_redirect');
+})();
+
+/* ── Input helpers ─────────────────────────────────────────────────────── */
+function clearErrs() {
+  ['username','password'].forEach(id => {
+    document.getElementById(id).classList.remove('err');
+    document.getElementById(id+'-err').textContent = '';
+  });
+  hideGlobalErr();
+}
+function fieldErr(id, msg) {
+  document.getElementById(id).classList.add('err');
+  document.getElementById(id+'-err').textContent = msg;
+  document.getElementById(id).focus();
+}
+function showGlobalErr(msg) {
+  const el = document.getElementById('global-err');
+  document.getElementById('global-err-msg').textContent = msg;
+  el.classList.add('show');
+  document.getElementById('card').classList.add('shake');
+  setTimeout(() => document.getElementById('card').classList.remove('shake'), 400);
+}
+function hideGlobalErr() {
+  document.getElementById('global-err').classList.remove('show');
+}
+
+/* ── Password visibility ────────────────────────────────────────────────── */
+function togglePw() {
+  const inp = document.getElementById('password');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  document.getElementById('eye').textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+/* ── Validate inputs before sending ────────────────────────────────────── */
+function validate() {
+  let ok = true;
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value;
+  if (!u) { fieldErr('username', 'Username is required'); ok = false; }
+  else if (u.length < 3) { fieldErr('username', 'At least 3 characters'); ok = false; }
+  if (!p) { fieldErr('password', 'Password is required'); ok = false; }
+  return ok;
+}
+
+/* ── Login ─────────────────────────────────────────────────────────────── */
+async function doLogin() {
+  clearErrs();
+  if (!validate()) return;
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  document.getElementById('btn-txt').style.opacity = '.35';
+  document.getElementById('btn-sp').style.display = 'inline-block';
+
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+
+  try {
+    const r = await fetch(API + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await r.json();
+
+    if (!r.ok) {
+      if (r.status === 401) {
+        showGlobalErr('Incorrect username or password.');
+        fieldErr('password', 'Check your password');
+      } else {
+        showGlobalErr(data.detail || `Server error (${r.status})`);
+      }
+      return;
+    }
+
+    /* Save token + user info */
+    localStorage.setItem('dt', data.access_token);
+    localStorage.setItem('dm', JSON.stringify({
+      id: data.user_id,
+      username: data.username,
+      currency: '₹',
+    }));
+
+    /* Route based on state */
+    if (!data.onboarding_complete) {
+      window.location.href = 'app.html#onboarding';
+    } else if (data.needs_budget_setup) {
+      window.location.href = 'app.html#budget';
+    } else {
+      window.location.href = 'app.html';
+    }
+
+  } catch (e) {
+    showGlobalErr('Cannot reach server. Make sure it is running on port 8000.');
+  } finally {
+    btn.disabled = false;
+    document.getElementById('btn-txt').style.opacity = '1';
+    document.getElementById('btn-sp').style.display = 'none';
+  }
+}
+
+function forgotPass(e) {
+  e.preventDefault();
+  showGlobalErr('Password reset is not available in local mode. Contact your admin or delete decide.db to reset.');
+}
+
+/* ── Keyboard ───────────────────────────────────────────────────────────── */
+document.getElementById('username').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('password').focus();
+});
+document.getElementById('password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+document.getElementById('username').addEventListener('input', clearErrs);
+document.getElementById('password').addEventListener('input', clearErrs);
+</script>
+</body>
+</html>

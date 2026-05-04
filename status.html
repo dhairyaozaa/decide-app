@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decide — Connection Status</title>
+<script src="config.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0c0b0a;--card:#161412;--amber:#e8a838;--green:#5aad7e;--red:#d96060;--t0:#e4dfd5;--t1:#8f897e;--t2:#4e4a44;--sans:'DM Sans',system-ui,sans-serif}
+body{font-family:var(--sans);background:var(--bg);color:var(--t0);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.box{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:36px;max-width:520px;width:100%}
+.logo{font-size:1.2rem;color:var(--amber);margin-bottom:28px;display:flex;align-items:center;gap:8px}
+h1{font-size:1.4rem;margin-bottom:6px}
+.sub{font-size:.83rem;color:var(--t1);margin-bottom:28px}
+.check{display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:8px;margin-bottom:10px;border:1px solid rgba(255,255,255,.06)}
+.icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.check-label{font-size:.85rem;font-weight:500;margin-bottom:3px}
+.check-detail{font-size:.76rem;color:var(--t1);line-height:1.5}
+.check.ok{background:rgba(90,173,126,.08);border-color:rgba(90,173,126,.2)}
+.check.fail{background:rgba(217,96,96,.08);border-color:rgba(217,96,96,.2)}
+.check.warn{background:rgba(232,168,56,.08);border-color:rgba(232,168,56,.2)}
+.check.loading{background:rgba(255,255,255,.03)}
+.fix{margin-top:8px;padding:10px 12px;background:rgba(0,0,0,.3);border-radius:6px;font-size:.76rem;color:var(--t1);line-height:1.6}
+.fix code{color:var(--amber);font-family:monospace;font-size:.8rem}
+a.btn{display:inline-block;margin-top:20px;background:var(--amber);color:#1a0e00;font-size:.88rem;font-weight:500;padding:11px 20px;border-radius:8px;text-decoration:none}
+a.btn:hover{background:#f0b84a}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.1);border-top-color:var(--t1);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="logo">
+    <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
+      <circle cx="11" cy="11" r="10" stroke="#e8a838" stroke-width="1.5"/>
+      <path d="M11 5v6l3.5 3.5" stroke="#e8a838" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    Decide — Connection Diagnostics
+  </div>
+
+  <h1>Checking your setup…</h1>
+  <p class="sub">This page tells you exactly what's working and what isn't.</p>
+
+  <div class="check loading" id="c-api">
+    <div class="icon"><div class="spinner"></div></div>
+    <div>
+      <div class="check-label">API Server</div>
+      <div class="check-detail" id="d-api">Checking <span id="api-url"></span>…</div>
+    </div>
+  </div>
+
+  <div class="check loading" id="c-tunnel">
+    <div class="icon"><div class="spinner"></div></div>
+    <div>
+      <div class="check-label">Tunnel / Public URL</div>
+      <div class="check-detail" id="d-tunnel">Checking config.js…</div>
+    </div>
+  </div>
+
+  <div class="check loading" id="c-db">
+    <div class="icon"><div class="spinner"></div></div>
+    <div>
+      <div class="check-label">Database</div>
+      <div class="check-detail" id="d-db">Waiting for server…</div>
+    </div>
+  </div>
+
+  <div id="action-area" style="margin-top:6px"></div>
+
+  <div style="margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,.06)">
+    <div style="font-size:.76rem;color:var(--t2);margin-bottom:10px">Jump to:</div>
+    <a href="login.html" style="font-size:.82rem;color:var(--amber);margin-right:16px">Login →</a>
+    <a href="signup.html" style="font-size:.82rem;color:var(--amber);margin-right:16px">Sign up →</a>
+    <a href="app.html" style="font-size:.82rem;color:var(--amber)">App →</a>
+  </div>
+</div>
+
+<script>
+const ON_LOCALHOST = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+const CONFIGURED  = (typeof window.DECIDE_API !== 'undefined') ? window.DECIDE_API : '';
+const IS_PLACEHOLDER = !CONFIGURED
+  || CONFIGURED.includes('PASTE_YOUR')
+  || CONFIGURED.includes('YOUR_TUNNEL')
+  || CONFIGURED.includes('test123');
+
+// Resolve the API URL same way all pages do
+const API = ON_LOCALHOST ? 'http://localhost:8000'
+  : IS_PLACEHOLDER ? 'http://localhost:8000'
+  : CONFIGURED;
+
+document.getElementById('api-url').textContent = API;
+
+function setCheck(id, state, label, detail, fix) {
+  const el = document.getElementById('c-' + id);
+  const icons = {ok:'✅', fail:'❌', warn:'⚠️'};
+  el.className = 'check ' + state;
+  el.querySelector('.icon').textContent = icons[state] || '•';
+  el.querySelector('.check-label').textContent = label;
+  const dd = el.querySelector('.check-detail');
+  dd.textContent = detail;
+  if (fix) {
+    const d = document.createElement('div');
+    d.className = 'fix';
+    d.innerHTML = fix;
+    dd.after(d);
+  }
+}
+
+async function run() {
+  // ── Check 1: Tunnel config ────────────────────────────────────────────
+  if (ON_LOCALHOST) {
+    setCheck('tunnel', 'ok', 'Running locally',
+      'You are on localhost — no tunnel needed. Tunnel is required only for GitHub Pages.');
+  } else if (IS_PLACEHOLDER) {
+    setCheck('tunnel', 'fail', 'Tunnel URL not set',
+      'config.js has a placeholder URL. The app cannot reach your server.',
+      `Fix:<br>
+      1. Run <code>ngrok http 8000</code> in a terminal<br>
+      2. Copy the <code>https://....ngrok-free.app</code> URL<br>
+      3. Run <code>deploy\\update_tunnel_url.bat https://YOUR-URL</code><br>
+      4. Then: <code>cd github-pages</code> → <code>git add config.js</code> → <code>git commit -m "fix url"</code> → <code>git push</code>`);
+  } else {
+    setCheck('tunnel', 'ok', 'Tunnel URL configured', `Using: ${CONFIGURED}`);
+  }
+
+  // ── Check 2: Server reachable ─────────────────────────────────────────
+  let serverOk = false;
+  let health = null;
+  try {
+    const r = await fetch(API + '/health', { signal: AbortSignal.timeout(6000) });
+    health = await r.json();
+    serverOk = r.ok;
+  } catch(e) {
+    serverOk = false;
+  }
+
+  if (serverOk) {
+    setCheck('api', 'ok', 'Server is reachable', `Connected to ${API}`);
+  } else if (ON_LOCALHOST) {
+    setCheck('api', 'fail', 'Server not running',
+      'Cannot reach http://localhost:8000',
+      `Fix: Open a terminal and run:<br><code>cd micro_decision_assistant_v2</code><br><code>python run.py</code>`);
+  } else {
+    setCheck('api', 'fail', 'Server not reachable',
+      `Cannot reach ${API}`,
+      `Possible causes:<br>
+      • Your PC is off or asleep<br>
+      • ngrok tunnel is not running — run <code>deploy\\start_ngrok.bat</code><br>
+      • The ngrok URL changed — run <code>deploy\\update_tunnel_url.bat NEW_URL</code> and push config.js`);
+  }
+
+  // ── Check 3: Database ─────────────────────────────────────────────────
+  if (serverOk && health) {
+    if (health.db_connected) {
+      setCheck('db', 'ok', 'Database connected', `SQLite ready — LLM: ${health.llm_provider}`);
+    } else {
+      setCheck('db', 'fail', 'Database error',
+        'Server is running but database has a problem.',
+        'Check server terminal for error messages.');
+    }
+  } else {
+    setCheck('db', 'warn', 'Database unknown', 'Cannot check — server is not reachable.');
+  }
+
+  // ── Action area ────────────────────────────────────────────────────────
+  const area = document.getElementById('action-area');
+  if (serverOk) {
+    area.innerHTML = '<a class="btn" href="login.html">Go to Login →</a>';
+  } else if (ON_LOCALHOST) {
+    area.innerHTML = '<div class="fix">Start the server: open a terminal in the project folder and run <code>python run.py</code></div>';
+  } else {
+    area.innerHTML = '<div class="fix">Steps to fix:<br>1. Make sure your PC is on and <code>python run.py</code> is running<br>2. Run <code>deploy\\start_ngrok.bat</code><br>3. Copy the URL and run <code>deploy\\update_tunnel_url.bat https://YOUR-URL</code><br>4. Push config.js to GitHub</div>';
+  }
+}
+
+run();
+</script>
+</body>
+</html>
